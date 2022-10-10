@@ -3,6 +3,7 @@ import * as bodyParser from "body-parser";
 import * as cors from "cors";
 import { config } from "dotenv";
 import AppDataSource from "./config/dataSource";
+import router from "./routes";
 
 config();
 
@@ -26,6 +27,7 @@ class App {
 				);
 				this.app.use(bodyParser.json());
 				this.app.use(bodyParser.urlencoded({ extended: false }));
+				this.app.use("/", router);
 			})
 			.catch((error) => {
 				console.log(error);

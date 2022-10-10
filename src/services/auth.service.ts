@@ -9,17 +9,10 @@ export type AuthServiceGetType = {
 };
 
 class AuthService {
-	private accessTokenSecret: string;
-	private refreshTokenSecret: string;
-	private expiredAccessTokenSecret: number;
-	private expiredRefreshTokenSecret: number;
-
-	constructor() {
-		this.accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
-		this.refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET;
-		this.expiredAccessTokenSecret = 1000 * 60 * 60;
-		this.expiredAccessTokenSecret = 1000 * 60 * 60;
-	}
+	private accessTokenSecret: string = process.env.ACCESS_TOKEN_SECRET;
+	private refreshTokenSecret: string = process.env.REFRESH_TOKEN_SECRET;
+	private expiredAccessTokenSecret: number = 1000 * 60 * 60;
+	private expiredRefreshTokenSecret: number = 1000 * 60 * 60;
 
 	get(): AuthServiceGetType {
 		return {

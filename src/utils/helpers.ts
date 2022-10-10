@@ -1,16 +1,12 @@
 import * as bcrypt from "bcrypt";
 import { Response } from "express";
 import { STATUS, CODE, MESSAGE } from "./constants";
+import { QueryParams } from "./types";
 
 class Helper {
-	private salt: string;
-
-	constructor() {
-		this.salt = bcrypt.genSaltSync();
-	}
-
-	hashPassword(rawPassword): string {
-		return bcrypt.hashSync(rawPassword, this.salt);
+	async hashPassword(rawPassword): Promise<string> {
+		const salt = await bcrypt.genSalt();
+		return bcrypt.hash(rawPassword, salt);
 	}
 
 	comparePassword(rawPassword, hash): boolean {
@@ -30,7 +26,7 @@ class Helper {
 		res.status(STATUS.SUCCESS).json({
 			code: CODE.SUCCESS,
 			message: MESSAGE.SUCCESS,
-			...(data || {}),
+			...(data ? { data } : {}),
 		});
 	}
 
@@ -38,7 +34,7 @@ class Helper {
 		res.status(STATUS.CREATED).json({
 			code: CODE.SUCCESS,
 			message: MESSAGE.SUCCESS,
-			...(data || {}),
+			...(data ? { data } : {}),
 		});
 	}
 
@@ -47,6 +43,17 @@ class Helper {
 			code: CODE.UNAUTHORIZED,
 			message: MESSAGE.UNAUTHORIZED,
 		});
+	}
+
+	handlePaginateAndSort(query: QueryParams): any {
+		const { pageSize, page, sortBy, sortType } = query;
+		return {
+			...(pageSize ? { take: +pageSize } : {}),
+			...(page && pageSize ? { skip: (+page - 1) * +pageSize } : {}),
+			order: {
+				[sortBy || "id"]: sortType || "desc",
+			},
+		};
 	}
 }
 

@@ -4,25 +4,6 @@ import authService from "../services/auth.service";
 import helpers from "../utils/helpers";
 
 class AuthController {
-	private refreshTokenCookieName: string;
-
-	constructor() {
-		this.refreshTokenCookieName = "refreshToken";
-	}
-
-	writeCookie(res: Response, payload: any) {
-		res.cookie(this.refreshTokenCookieName, payload, {
-			maxAge: authService.get().expiredRefreshTokenSecret,
-			httpOnly: true,
-			secure: false,
-			sameSite: "lax",
-		});
-	}
-
-	readCooke(req: Request) {
-		return req.cookies[this.refreshTokenCookieName];
-	}
-
 	async register(req: Request, res: Response) {
 		try {
 			const { email, password, fullName, phone } = req.body;
@@ -35,8 +16,8 @@ class AuthController {
 				return;
 			}
 
-			const hash = helpers.hashPassword(password);
-			const saved = accountService.create({ email, fullName, phone, hash });
+			const hash = await helpers.hashPassword(password);
+			const saved = await accountService.save(accountService.create({ email, fullName, phone, hash }));
 
 			const payload: any = {
 				id: saved.id,
@@ -46,7 +27,12 @@ class AuthController {
 			const accessToken = authService.createToken(payload, "AccessToken");
 			const refreshToken = authService.createToken(payload, "RefreshToken");
 
-			this.writeCookie(res, refreshToken);
+			res.cookie("refreshToken", refreshToken, {
+				maxAge: authService.get().expiredRefreshTokenSecret,
+				httpOnly: true,
+				secure: false,
+				sameSite: "lax",
+			});
 
 			helpers.handleSuccess(res, {
 				account: await accountService.getById(saved.id),
@@ -87,7 +73,12 @@ class AuthController {
 			const accessToken = authService.createToken(payload, "AccessToken");
 			const refreshToken = authService.createToken(payload, "RefreshToken");
 
-			this.writeCookie(res, refreshToken);
+			res.cookie("refreshToken", refreshToken, {
+				maxAge: authService.get().expiredRefreshTokenSecret,
+				httpOnly: true,
+				secure: false,
+				sameSite: "lax",
+			});
 
 			helpers.handleCreated(res, {
 				account: await accountService.getById(existingAccount.id),
@@ -102,7 +93,7 @@ class AuthController {
 
 	logout(req: Request, res: Response) {
 		try {
-			res.clearCookie(this.refreshTokenCookieName);
+			res.clearCookie("refreshToken");
 			helpers.handleSuccess(res);
 		} catch (error) {
 			helpers.handleError(res, error);
@@ -111,16 +102,28 @@ class AuthController {
 
 	refreshToken(req: Request, res: Response) {
 		try {
-			const token = this.readCooke(req) || req.body.token;
+			if (req.cookies || req.body.token) {
+				const token = req.body.token || req.cookies["refreshToken"];
 
-			const decoded = authService.verifyToken(token, "RefreshToken");
+				const decoded = authService.verifyToken(token, "RefreshToken");
+				console.log(decoded);
 
-			if (decoded) {
-				const accessToken = authService.createToken(decoded, "AccessToken");
-				const refreshToken = authService.createToken(decoded, "RefreshToken");
-				this.writeCookie(res, refreshToken);
-				helpers.handleSuccess(res, { accessToken, refreshToken });
-				return;
+				if (decoded) {
+					const payload: any = {
+						id: decoded.id,
+						role: decoded.role,
+					};
+					const accessToken = authService.createToken(payload, "AccessToken");
+					const refreshToken = authService.createToken(payload, "RefreshToken");
+					res.cookie("refreshToken", refreshToken, {
+						maxAge: authService.get().expiredRefreshTokenSecret,
+						httpOnly: true,
+						secure: false,
+						sameSite: "lax",
+					});
+					helpers.handleSuccess(res, { accessToken, refreshToken });
+					return;
+				}
 			}
 
 			helpers.handleUnauthorized(res);
@@ -157,7 +160,7 @@ class AuthController {
 			const { id } = res.locals.jwtPayload;
 			const { newPassword } = req.body;
 
-			const hash = helpers.hashPassword(newPassword);
+			const hash = await helpers.hashPassword(newPassword);
 
 			const { affected } = await accountService.update(id, { hash });
 			if (affected) {

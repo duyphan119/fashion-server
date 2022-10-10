@@ -1,7 +1,8 @@
 import accountRepository from "../repositories/account.repository";
-import { Account } from "../entities/account.entity";
+import Account from "../entities/account.entity";
 import { DeleteResult, UpdateResult } from "typeorm";
 import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
+import helpers from "../utils/helpers";
 
 export type RegisterDTO = {
 	email: string;
@@ -33,17 +34,18 @@ class AccountService {
 	}
 
 	getAll(query: any) {
-		const { pageSize, page, sortBy, sortType } = query;
-
 		return accountRepository.find({
-			select: {
-				hash: false,
-			},
+			select: { hash: false },
+			...helpers.handlePaginateAndSort(query),
 		});
 	}
 
 	create(body: CreateAccountDTO | RegisterDTO): Account {
 		return accountRepository.create(body);
+	}
+
+	save(entity: Account): Promise<Account> {
+		return accountRepository.save(entity);
 	}
 
 	update(id: number, body: QueryDeepPartialEntity<Account>): Promise<UpdateResult> {

@@ -1,16 +1,17 @@
 import { Request, Response } from "express";
-import accountService from "../services/account.service";
+import Category from "../entities/category.entity";
+import categoryService from "../services/category.service";
 import helpers from "../utils/helpers";
+import { ResponseItems } from "../utils/types";
 
-class AccountController {
+class CategoryController {
 	async create(req: Request, res: Response) {
 		try {
-			const { email, password, fullName, phone, gender, dob } = req.body;
+			const { name, slug, parentId, mediaId, description } = req.body;
 
-			const hash = await helpers.hashPassword(password);
-			const saved = await accountService.save(accountService.create({ email, hash, fullName, phone, gender, dob: new Date(dob) }));
+			const saved = await categoryService.save(categoryService.create({ name, slug, parentId, mediaId, description }));
 
-			helpers.handleCreated(res, await accountService.getById(saved.id));
+			helpers.handleCreated(res, saved);
 		} catch (error) {
 			helpers.handleError(res, error);
 		}
@@ -18,10 +19,11 @@ class AccountController {
 
 	async getAll(req: Request, res: Response) {
 		try {
-			helpers.handleSuccess(res, {
-				items: await accountService.getAll(req.query),
-				count: await accountService.getCount(req.query),
-			});
+			const data: ResponseItems<Category> = {
+				items: await categoryService.getAll(req.query),
+				count: await categoryService.getCount(req.query),
+			};
+			helpers.handleSuccess(res, data);
 		} catch (error) {
 			helpers.handleError(res, error);
 		}
@@ -30,7 +32,7 @@ class AccountController {
 	async getById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			helpers.handleSuccess(res, await accountService.getById(+id));
+			helpers.handleSuccess(res, await categoryService.getById(+id));
 		} catch (error) {
 			helpers.handleError(res, error);
 		}
@@ -39,7 +41,7 @@ class AccountController {
 	async update(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			const { affected } = await accountService.update(+id, req.body);
+			const { affected } = await categoryService.update(+id, req.body);
 			if (affected) {
 				helpers.handleSuccess(res);
 				return;
@@ -53,7 +55,7 @@ class AccountController {
 	async deleteById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			const { affected } = await accountService.deleteById(+id);
+			const { affected } = await categoryService.deleteById(+id);
 			if (affected) {
 				helpers.handleSuccess(res);
 				return;
@@ -67,7 +69,7 @@ class AccountController {
 	async deleteByIds(req: Request, res: Response) {
 		try {
 			const { ids } = req.body;
-			const { affected } = await accountService.deleteMany(ids);
+			const { affected } = await categoryService.deleteMany(ids);
 			if (affected) {
 				helpers.handleSuccess(res);
 				return;
@@ -79,4 +81,4 @@ class AccountController {
 	}
 }
 
-export default new AccountController();
+export default new CategoryController();

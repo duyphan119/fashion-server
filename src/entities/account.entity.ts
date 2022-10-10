@@ -10,8 +10,8 @@ export enum AccountRole {
 	CUSTOMER = "Customer",
 }
 
-@Entity()
-export class Account {
+@Entity({ name: "accounts" })
+class Account {
 	@PrimaryGeneratedColumn({ name: "account_id" })
 	id: number;
 
@@ -33,9 +33,10 @@ export class Account {
 	@Column({ default: AccountRole.CUSTOMER, enum: AccountRole, type: "enum", name: "account_role" })
 	role: string;
 
-	@Column()
+	@Column({ default: new Date("1999/12/31") })
 	dob: Date;
 
 	@CreateDateColumn({ name: "created_at" })
-	createdAt: string;
+	createdAt: Date;
 }
+export default Account;
