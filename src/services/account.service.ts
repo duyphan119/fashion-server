@@ -17,8 +17,23 @@ export type CreateAccountDTO = {
 	hash: string;
 } & RegisterDTO;
 
+export type AccountQueryParams = Partial<{
+	fullName: string;
+	email: string;
+	gender: string;
+}>;
+
 class AccountService {
-	getByEmail(email: string) {
+	handleQuery(query: AccountQueryParams) {
+		const { fullName, email, gender } = query;
+		return {
+			...(fullName ? { fullName } : {}),
+			...(email ? { email } : {}),
+			...(gender ? { gender } : {}),
+		};
+	}
+
+	getByEmail(email: string): Promise<Account> {
 		return accountRepository.findOneBy({ email });
 	}
 
@@ -30,13 +45,16 @@ class AccountService {
 	}
 
 	getCount(query: any): Promise<number> {
-		return accountRepository.count();
+		return accountRepository.count({
+			where: this.handleQuery(query),
+		});
 	}
 
-	getAll(query: any) {
+	getAll(query: any): Promise<Array<Account>> {
 		return accountRepository.find({
 			select: { hash: false },
 			...helpers.handlePaginateAndSort(query),
+			where: this.handleQuery(query),
 		});
 	}
 

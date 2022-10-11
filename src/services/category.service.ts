@@ -12,7 +12,24 @@ export type CreateCategoryDTO = {
 	description: string;
 };
 
+export type CategoryQueryParams = Partial<{
+	name: string;
+	parentName: string;
+	slug: string;
+	description: string;
+}>;
+
 class CategoryService {
+	handleQuery(query: CategoryQueryParams) {
+		const { name, parentName, slug, description } = query;
+		return {
+			...(name ? { name } : {}),
+			...(parentName ? { parent: { name: parentName } } : {}),
+			...(slug ? { slug } : {}),
+			...(description ? { description } : {}),
+		};
+	}
+
 	getBySlug(slug: string) {
 		return categoryRepository.findOneBy({ slug });
 	}
@@ -27,7 +44,7 @@ class CategoryService {
 	}
 
 	getCount(query: any): Promise<number> {
-		return categoryRepository.count();
+		return categoryRepository.count({ where: this.handleQuery(query) });
 	}
 
 	getAll(query: any): Promise<Array<Category>> {
@@ -37,6 +54,7 @@ class CategoryService {
 				...this.handleDepth(2, "parent"),
 				...this.handleDepth(2, "children"),
 			},
+			where: this.handleQuery(query),
 		});
 	}
 
