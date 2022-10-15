@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Category from "./category.entity";
+import ProductImage from "./product-image.entity";
 
 @Entity({ name: "medias" })
 class Media {
@@ -15,7 +16,10 @@ class Media {
 	@CreateDateColumn({ name: "created_at" })
 	createdAt: Date;
 
-	@OneToMany((type) => Category, (category) => category.media)
-	categories: Category[];
+	@OneToMany(() => Category, (category) => category.media)
+	categories: Array<Category>;
+
+	@OneToMany(() => ProductImage, (productImage) => productImage.media)
+	productImages: Category[];
 }
 export default Media;

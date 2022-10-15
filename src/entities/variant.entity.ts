@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from "typeorm";
+import { Entity, Column, PrimaryColumn, OneToMany } from "typeorm";
+import ProductImage from "./product-image.entity";
 
 export enum VariantType {
 	COLOR = "Màu sắc",
@@ -15,5 +16,9 @@ class Variant {
 
 	@Column({ enum: VariantType, type: "enum" })
 	type: string;
+
+	@OneToMany(() => ProductImage, productImage=>productImage.variant)
+	productImages: Array<ProductImage>
+
 }
 export default Variant;

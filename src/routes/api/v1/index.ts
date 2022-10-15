@@ -3,6 +3,7 @@ import accountRouter from "./account.router";
 import authRouter from "./auth.router";
 import categoryRouter from "./category.router";
 import mediaRouter from "./media.router";
+import productImageRouter from "./product-image.router";
 import productRouter from "./product.router";
 import variantRouter from "./variant.router";
 const v1Router = Router();
@@ -13,5 +14,6 @@ v1Router.use("/media", mediaRouter);
 v1Router.use("/category", categoryRouter);
 v1Router.use("/variant", variantRouter);
 v1Router.use("/product", productRouter);
+v1Router.use("/product-image", productImageRouter);
 
 export default v1Router;

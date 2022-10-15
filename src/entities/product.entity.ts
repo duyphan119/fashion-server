@@ -1,14 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
-
-export enum Gender {
-	MALE = "Nam",
-	FEMALE = "Nữ",
-}
-
-export enum AccountRole {
-	ADMIN = "Admin",
-	CUSTOMER = "Customer",
-}
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import ProductImage from "./product-image.entity";
+import Sku from "./sku";
 
 @Entity({ name: "products" })
 class Product {
@@ -26,6 +18,12 @@ class Product {
 
 	@Column()
 	description: string;
+
+	@OneToMany(() => Sku, (sku) => sku.product)
+	skus: Array<Sku>;
+
+	@OneToMany(() => ProductImage, (productImage) => productImage.product)
+	productImages: Array<Sku>;
 
 	@CreateDateColumn({ name: "created_at" })
 	createdAt: Date;

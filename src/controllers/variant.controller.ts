@@ -9,7 +9,7 @@ class VariantController {
 
 			const saved = await variantService.save(variantService.create({ id, name, type }));
 
-			helpers.handleCreated(res, await variantService.getById(saved.id));
+			helpers.handleCreated(res, saved);
 		} catch (error) {
 			helpers.handleError(res, error);
 		}
